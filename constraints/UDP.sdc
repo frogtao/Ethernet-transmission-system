@@ -1,0 +1,51 @@
+create_clock -name {clk_in} -period 20.000 -waveform {0.000 10.000} [get_ports {clk50m}]
+create_clock -name {phy1_rgmii_rx_clk} -period 8.000 -waveform {0.000 4.000} [get_ports {phy1_rgmii_rx_clk}]
+
+create_generated_clock -name {pll_inst_50M_0} -source [get_ports {clk50m}] -master_clock {clk_in} -divide_by 1.000 [get_pins {u_pll_50/pll_inst.clkc[0]}]
+create_generated_clock -name {pll_inst_125M_0} -source [get_ports {clk50m}] -master_clock {clk_in} -multiply_by 2.500 [get_pins {u_pll_50/pll_inst.clkc[1]}]
+create_generated_clock -name {pll_inst_125M_1} -source [get_ports {clk50m}] -master_clock {clk_in} -multiply_by 2.500 [get_pins {u_pll_50/pll_inst.clkc[3]}]
+
+create_generated_clock -name {sdrpll_inst_125M_0} -source [get_ports {clk50m}] -master_clock {clk_in} -multiply_by 2.500 [get_pins {t3_sdram/u0_clk/pll_inst.clkc[1]}]
+create_generated_clock -name {sdrpll_inst_125M_1} -source [get_ports {clk50m}] -master_clock {clk_in} -multiply_by 2.500 [get_pins {t3_sdram/u0_clk/pll_inst.clkc[2]}]
+
+create_generated_clock -name {udp_clk_125m} -add -source [get_pins {u_pll_50/pll_inst.clkc[1]}] -master_clock {pll_inst_125M_0} -divide_by 1.000 [get_nets {loc_clk125m}]
+create_generated_clock -name {sdr_clk_125m} -add -source [get_pins {t3_sdram/u0_clk/pll_inst.clkc[1]}] -master_clock {sdrpll_inst_125M_0} -divide_by 1.000 [get_nets {sdr_clk}]
+
+#create_generated_clock -name {udp_clk_1p25m} -add -source [get_pins {u_clk_gen/u_pll_0/pll_inst.clkc[2]}] -master_clock {pll_inst_12p5M} -divide_by 10.000 [get_nets {udp_clk}]
+
+set_clock_groups -exclusive -group [get_clocks {udp_clk_125m}]
+set_clock_groups -exclusive -group [get_clocks {sdr_clk_125m}]
+#set_clock_groups -exclusive -group [get_clocks {udp_clk_1p25m}]
+ 
+set_clock_groups -exclusive -group [get_clocks {phy1_rgmii_rx_clk}]
+#derive_pll_clocks -instance [get_cells {u_rx_pll/pll_inst}]
+
+
+
+##derive_clocks
+#rename_clock -name {pll_inst_50M_0} [get_clocks {u_pll_50/pll_inst.clkc[0]}]
+#rename_clock -name {pll_inst_125M_0} [get_clocks {u_pll_50/pll_inst.clkc[1]}]
+#rename_clock -name {pll_inst_125M_1} [get_clocks {u_pll_50/pll_inst.clkc[3]}]
+#rename_clock -name {sdrpll_inst_125M_0} [get_clocks {t3_sdram/u0_clk/pll_inst.clkc[1]}]
+#rename_clock -name {sdrpll_inst_125M_1} [get_clocks {t3_sdram/u0_clk/pll_inst.clkc[2]}]
+#
+#create_generated_clock -name {clk125m} -source [get_pins {u_pll_50/pll_inst.clkc[1]}] -master_clock {pll_inst_125M_0} -divide_by 1.000 -phase 0.000 -add [get_nets {loc_clk125m}]
+#set_clock_groups -exclusive -group [get_clocks {clk125m}]
+#create_generated_clock -name {sdr_clk125m} -source [get_pins {t3_sdram/u0_clk/pll_inst.clkc[1]}] -master_clock {sdrpll_inst_125M_0} -divide_by 1.000 -phase 0.000 -add [get_nets {t3_sdram/Clk}]
+#set_clock_groups -exclusive -group [get_clocks {sdr_clk125m}]
+
+##derive_clocks
+##rename_clock -name {pll_inst_125M_0} [get_clocks {u_clk_gen/u_pll_0/pll_inst.clkc[0]}]
+##rename_clock -name {pll_inst_125M_1} [get_clocks {u_clk_gen/u_pll_0/pll_inst.clkc[1]}]
+###rename_clock -name {pll_inst_12p5M} [get_clocks {u_clk_gen/u_pll_0/pll_inst.clkc[2]}]
+##rename_clock -name {pll_inst_25M} [get_clocks {u_clk_gen/u_pll_0/pll_inst.clkc[3]}]
+##
+##create_generated_clock -name {udp_clk_125m} -source [get_pins {u_clk_gen/u_pll_0/pll_inst.clkc[1]}] -master_clock {pll_inst_125M_1} -divide_by 1.000 -phase 0.000 -add [get_nets {udp_clk}]
+###create_generated_clock -name {udp_clk_12p5m} -add -source [get_pins {u_clk_gen/u_pll_0/pll_inst.clkc[2]}] -master_clock {pll_inst_12p5M} -divide_by 1.000 [get_nets {udp_clk}]
+###create_generated_clock -name {udp_clk_1p25m} -add -source [get_pins {u_clk_gen/u_pll_0/pll_inst.clkc[2]}] -master_clock {pll_inst_12p5M} -divide_by 10.000 [get_nets {udp_clk}]
+##set_clock_groups -exclusive -group [get_clocks {udp_clk_125m}]
+###set_clock_groups -exclusive -group [get_clocks {udp_clk_12p5m}]
+###set_clock_groups -exclusive -group [get_clocks {udp_clk_1p25m}]
+
+
+set_clock_groups -exclusive -group [get_clocks {phy1_rgmii_rx_clk}]
